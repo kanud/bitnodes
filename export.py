@@ -92,6 +92,21 @@ def export_nodes(nodes, timestamp):
     open(dump, 'w').write(json.dumps(rows, encoding="latin-1"))
     logging.info("Wrote %s", dump)
 
+def export_inv(ik, invmsgs):
+    """
+    Exports inv messages of blocks (type 2)
+    """
+    rows = []
+    start = time.time()
+    for im in invmsgs:
+        rows.append(im)
+    end = time.time()
+    elapsed = end - start
+    #logging.info("Elapsed: %d", elapsed)
+    dump = os.path.join(SETTINGS['export_dir'], "{}.json".format(ik[6:]))
+    open(dump, 'w').write(json.dumps(rows, encoding="latin-1"))
+    #logging.info("Wrote %s", dump)
+
 
 def init_settings(argv):
     """
@@ -143,6 +158,15 @@ def main(argv):
             nodes = REDIS_CONN.smembers('opendata')
             logging.info("Nodes: %d", len(nodes))
             export_nodes(nodes, timestamp)
+
+            # export inv messages
+            invkeys = REDIS_CONN.keys(pattern='inv:2*')
+            for ik in invkeys:
+                invmsgs = REDIS_CONN.zrange(ik, 0, -1)
+                export_inv(ik, invmsgs)
+
+            logging.info("Inv keys: %d", len(invkeys))
+
             REDIS_CONN.publish('export', timestamp)
 
     return 0

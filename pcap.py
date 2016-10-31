@@ -123,7 +123,7 @@ class Cache(object):
                         node = dst
                     self.cache_message(node, self.stream.timestamp, msg)
         self.redis_pipe.execute()
-        self.cache_rtt()
+        self.cache_rtt()        
 
     def extract_streams(self):
         """
@@ -186,7 +186,7 @@ class Cache(object):
                         # Ignore block inv first seen more than 3 hours ago
                         logging.debug("Skip: %s", key)
                         continue
-                self.redis_pipe.zadd(key, timestamp, self.node_hash(node))
+                self.redis_pipe.zadd(key, timestamp, str(self.node_hash(node)) + ',' + str(timestamp))
                 self.redis_pipe.expire(key, SETTINGS['ttl'])
             self.count += msg['count']
         elif msg['command'] == "pong":

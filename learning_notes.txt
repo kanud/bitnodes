@@ -1,0 +1,7 @@
+MAIN
+
+Flush redis db. Looks at seeders, gets their IP addresses/ onion addresses. These are added to the 'pending' set in the redis db.
+What's TO_SERVICES (in protocol.py) ? the full tuple is (address, default port, TO_SERVICES)
+
+workers are spawned- one of them is for cron jobs (only master, not slaves spawns this). num of workers is 500 in crawl.conf.default. 
+
