@@ -103,7 +103,7 @@ def export_inv(ik, invmsgs):
     end = time.time()
     elapsed = end - start
     #logging.info("Elapsed: %d", elapsed)
-    dump = os.path.join(SETTINGS['export_dir'], "{}.json".format(ik[6:]))
+    dump = os.path.join(SETTINGS['export_dir'], "{}.json".format(ik[6:] + '_' + ik[4]))
     open(dump, 'w').write(json.dumps(rows, encoding="latin-1"))
     #logging.info("Wrote %s", dump)
 
@@ -160,12 +160,14 @@ def main(argv):
             export_nodes(nodes, timestamp)
 
             # export inv messages
-            invkeys = REDIS_CONN.keys(pattern='inv:2*')
-            for ik in invkeys:
+            ik_iter = REDIS_CONN.scan_iter(match='inv')
+            ik_count = 0
+            for ik in ik_iter:
+                ik_count += 1
                 invmsgs = REDIS_CONN.zrange(ik, 0, -1)
                 export_inv(ik, invmsgs)
 
-            logging.info("Inv keys: %d", len(invkeys))
+            logging.info("Inv keys: %d", ik_count)
 
             REDIS_CONN.publish('export', timestamp)
 
